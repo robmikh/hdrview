@@ -2,16 +2,14 @@ use std::sync::Once;
 
 use windows::{
     core::{w, ComInterface, Result, HSTRING, PCWSTR},
-    Foundation::Numerics::Vector2,
     Win32::{
         Foundation::{HWND, LPARAM, LRESULT, RECT, WPARAM},
         System::{LibraryLoader::GetModuleHandleW, WinRT::Composition::ICompositorDesktopInterop},
         UI::WindowsAndMessaging::{
-            AdjustWindowRectEx, CreateWindowExW, DefWindowProcW, GetClientRect, GetWindowLongPtrW,
-            LoadCursorW, PostQuitMessage, RegisterClassW, SetWindowLongPtrW, ShowWindow,
-            CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW, SW_SHOW, WM_DESTROY,
-            WM_LBUTTONDOWN, WM_MOUSEMOVE, WM_NCCREATE, WM_RBUTTONDOWN, WM_SIZE, WM_SIZING,
-            WNDCLASSW, WS_EX_NOREDIRECTIONBITMAP, WS_OVERLAPPEDWINDOW,
+            AdjustWindowRectEx, CreateWindowExW, DefWindowProcW, GetWindowLongPtrW, LoadCursorW,
+            PostQuitMessage, RegisterClassW, SetWindowLongPtrW, ShowWindow, CREATESTRUCTW,
+            CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW, SW_SHOW, WM_DESTROY, WM_NCCREATE, WNDCLASSW,
+            WS_EX_NOREDIRECTIONBITMAP, WS_OVERLAPPEDWINDOW,
         },
     },
     UI::Composition::{Compositor, Desktop::DesktopWindowTarget},
@@ -56,9 +54,7 @@ impl Window {
             (rect.right - rect.left, rect.bottom - rect.top)
         };
 
-        let mut result = Box::new(Self {
-            handle: HWND(0),
-        });
+        let mut result = Box::new(Self { handle: HWND(0) });
 
         let window = unsafe {
             CreateWindowExW(
