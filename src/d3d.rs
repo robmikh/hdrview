@@ -1,5 +1,9 @@
 use windows::core::Result;
-use windows::Win32::Graphics::Direct3D11::D3D11_CREATE_DEVICE_DEBUG;
+use windows::Win32::Graphics::Direct3D11::{
+    ID3D11Texture2D, D3D11_BIND_SHADER_RESOURCE, D3D11_CREATE_DEVICE_DEBUG, D3D11_SUBRESOURCE_DATA,
+    D3D11_TEXTURE2D_DESC, D3D11_USAGE_DEFAULT,
+};
+use windows::Win32::Graphics::Dxgi::Common::{DXGI_FORMAT, DXGI_SAMPLE_DESC};
 use windows::Win32::Graphics::{
     Direct3D::{D3D_DRIVER_TYPE, D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP},
     Direct3D11::{
@@ -46,4 +50,43 @@ pub fn create_d3d_device() -> Result<ID3D11Device> {
     }
     result?;
     Ok(device.unwrap())
+}
+
+pub fn create_texture_from_bytes(
+    d3d_device: &ID3D11Device,
+    width: u32,
+    height: u32,
+    pixel_format: DXGI_FORMAT,
+    stride: u32,
+    bytes: &[u8],
+) -> Result<ID3D11Texture2D> {
+    let texture = {
+        let desc = D3D11_TEXTURE2D_DESC {
+            Width: width,
+            Height: height,
+            MipLevels: 1,
+            ArraySize: 1,
+            Format: pixel_format,
+            SampleDesc: DXGI_SAMPLE_DESC {
+                Count: 1,
+                Quality: 0,
+            },
+            Usage: D3D11_USAGE_DEFAULT,
+            BindFlags: D3D11_BIND_SHADER_RESOURCE.0 as u32,
+            ..Default::default()
+        };
+
+        let init_data = D3D11_SUBRESOURCE_DATA {
+            pSysMem: bytes.as_ptr() as *const _,
+            SysMemPitch: stride,
+            SysMemSlicePitch: bytes.len() as u32,
+        };
+
+        unsafe {
+            let mut texture = None;
+            d3d_device.CreateTexture2D(&desc, Some(&init_data), Some(&mut texture))?;
+            texture.unwrap()
+        }
+    };
+    Ok(texture)
 }
