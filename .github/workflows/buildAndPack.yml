@@ -1,0 +1,40 @@
+name: Build and Pack
+
+on:
+  push:
+    branches:
+      - packtest
+    tags:
+      - 'v*'
+
+# Remove flags here that are present in config.toml once rust-lang/cargo#12875 is in
+env:
+  RUSTFLAGS: -Dwarnings -C target-feature=+crt-static
+
+jobs:
+  pack:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+        rust: [stable]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.rust }}
+        target: ${{ matrix.target }}
+        components: rustfmt
+    
+    - name: build
+      run: cargo build --release --target ${{ matrix.target }}
+
+    - name: fmt
+      run: cargo fmt --all -- --check
+      if: matrix.rust == 'stable'
+
+    - name: pack
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'hdrview_${{ matrix.target }}_release'
+        path: '.\target\${{ matrix.target }}\release\hdrview*'
